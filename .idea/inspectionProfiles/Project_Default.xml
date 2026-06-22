@@ -1,0 +1,27 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <list>
+          <option value="flask" />
+          <option value="faiss-cpu" />
+          <option value="python-docx" />
+          <option value="pypdf2" />
+          <option value="langchain" />
+          <option value="requests" />
+          <option value="streamlit" />
+          <option value="pandas" />
+          <option value="numpy" />
+          <option value="plotly" />
+          <option value="openai" />
+          <option value="chromadb" />
+          <option value="unstructured" />
+          <option value="python-dotenv" />
+          <option value="lunar-python" />
+          <option value="zhipuai" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
