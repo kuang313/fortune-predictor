@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
-import lunar_python
 import requests
 import os
 from config import Config
@@ -17,21 +16,47 @@ SHI_CHEN = ['子时(23-1)', '丑时(1-3)', '寅时(3-5)', '卯时(5-7)', '辰时
             '酉时(17-19)', '戌时(19-21)', '亥时(21-23)']
 
 def get_bazi(year, month, day, hour_index):
-    """计算八字"""
-    lunar = lunar_python.Lunar.from_date(year, month, day)
+    """
+    根据公历日期和时辰索引计算八字（纯公式，无外部依赖）
+    hour_index: 0~11 对应子时到亥时
+    """
+    # 年柱（以立春为界，此处简化按农历年起始，实际应以立春为准，但娱乐工具可用此近似）
     year_gan = TIAN_GAN[(year - 4) % 10]
     year_zhi = DI_ZHI[(year - 4) % 12]
+
+    # 月柱（以节气为界，此处简化按农历月，实际需节气，娱乐工具可接受）
     month_gan = TIAN_GAN[(year * 2 + month + 1) % 10]
     month_zhi = DI_ZHI[(month + 1) % 12]
-    base = (year - 1900) * 365 + (year - 1900) // 4 + day
-    base += sum([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][:month-1])
-    if (year % 4 == 0 and year % 100 != 0) or year % 400 == 0:
-        if month > 2:
-            base += 1
-    day_gan = TIAN_GAN[(base + 39) % 10]
-    day_zhi = DI_ZHI[(base - 1) % 12]
+
+    # 日柱（使用基准日算法：1900-01-01 为甲子日，此处计算偏移）
+    # 计算从1900-01-01到目标日期的天数
+    base_year = 1900
+    base_month = 1
+    base_day = 1
+    # 累计年份天数
+    days = 0
+    for y in range(base_year, year):
+        days += 366 if (y % 4 == 0 and y % 100 != 0) or (y % 400 == 0) else 365
+    # 累计月份天数
+    month_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    for m in range(1, month):
+        days += month_days[m-1]
+        if m == 2 and ((year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)):
+            days += 1  # 闰年二月多一天
+    days += day - 1  # 减去1，因为从0开始
+
+    # 1900-01-01 是甲子日（天干索引0，地支索引0）
+    # 日干 = (days + 0) % 10，日支 = (days + 0) % 12
+    day_gan = TIAN_GAN[days % 10]
+    day_zhi = DI_ZHI[days % 12]
+
+    # 时柱（根据日干和时辰地支推算时干）
+    # 五鼠遁：甲己还加甲，乙庚丙作初，丙辛从戊起，丁壬庚子居，戊癸何方发，壬子是真途
+    # 日干索引：0甲,1乙,2丙,3丁,4戊,5己,6庚,7辛,8壬,9癸
+    # 时干 = (日干索引 % 5) * 2 + 时支索引（子时为0）
     hour_gan = TIAN_GAN[((TIAN_GAN.index(day_gan)) % 5 * 2 + hour_index) % 10]
     hour_zhi = DI_ZHI[hour_index]
+
     return {
         'year': f'{year_gan}{year_zhi}',
         'month': f'{month_gan}{month_zhi}',
