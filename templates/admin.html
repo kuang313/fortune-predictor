@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>命理系统 - 管理后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .status-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        .status-label {
+            color: #666;
+            font-size: 13px;
+        }
+        .status-value {
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: scale(1.02); }
+        .btn:active { transform: scale(0.98); }
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 10px;
+        }
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+        .message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .tip {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .tip a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚙️ 系统配置</h1>
+        <p class="subtitle">管理智谱 AI 大模型 API 密钥</p>
+
+        <div class="status-box">
+            <div class="status-label">当前 API Key 状态</div>
+            <div class="status-value" id="currentStatus">{{ api_key }}</div>
+        </div>
+
+        <form id="configForm">
+            <div class="form-group">
+                <label>🔑 智谱 API Key</label>
+                <input type="password" id="apiKey" placeholder="例如：xxxxxxxx.yyyyyyy" required>
+            </div>
+            <div class="form-group">
+                <label>🤖 模型选择</label>
+                <select id="model">
+                    <option value="glm-4-flash">GLM-4-Flash（推荐，免费）</option>
+                    <option value="glm-4">GLM-4（标准版）</option>
+                    <option value="glm-4v">GLM-4V（多模态）</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">💾 保存配置</button>
+        </form>
+
+        <div id="message" class="message"></div>
+
+        <div class="tip">
+            💡 如何获取智谱 API Key？<br>
+            访问 <a href="https://open.bigmodel.cn/" target="_blank">智谱 AI 开放平台</a>
+            → 注册/登录 → 进入「API Keys」页面 → 创建新密钥
+        </div>
+
+        <a href="/" class="back-link">← 返回首页</a>
+    </div>
+
+    <script>
+        document.getElementById('configForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const msgEl = document.getElementById('message');
+            msgEl.className = 'message';
+            msgEl.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        api_key: document.getElementById('apiKey').value,
+                        model: document.getElementById('model').value
+                    })
+                });
+
+                const data = await response.json();
+
+                msgEl.className = 'message ' + (data.status === 'success' ? 'success' : 'error');
+                msgEl.textContent = data.message;
+                msgEl.style.display = 'block';
+
+                if (data.status === 'success') {
+                    document.getElementById('currentStatus').textContent =
+                        document.getElementById('apiKey').value.substring(0, 10) + '***';
+                    document.getElementById('apiKey').value = '';
+                }
+            } catch (err) {
+                msgEl.className = 'message error';
+                msgEl.textContent = '网络异常，请检查连接';
+                msgEl.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
