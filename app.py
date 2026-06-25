@@ -1,23 +1,34 @@
-from flask import Flask, render_template, request, jsonify
-from datetime import datetime
-import requests
+import sys
 import os
+import locale
 import random
+import requests
+from datetime import datetime
+from flask import Flask, render_template, request, jsonify
 from config import Config
 
+# ---------- 强制设置 UTF-8 编码（解决 Latin-1 编码错误） ----------
+try:
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+except:
+    pass
+sys.stdout.reconfigure(encoding='utf-8')
+
+# ---------- 初始化 Flask ----------
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 app.config.from_object(Config)
 
-# ---------- 原有部分：天干地支、八字排盘、AI运势 ----------
+# ---------- 天干地支定义（原有） ----------
 TIAN_GAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸']
 DI_ZHI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥']
 SHI_CHEN = ['子时(23-1)', '丑时(1-3)', '寅时(3-5)', '卯时(5-7)', '辰时(7-9)',
             '巳时(9-11)', '午时(11-13)', '未时(13-15)', '申时(15-17)',
             '酉时(17-19)', '戌时(19-21)', '亥时(21-23)']
 
+# ---------- 原有：八字排盘（纯公式） ----------
 def get_bazi(year, month, day, hour_index):
-    """原有八字排盘（纯公式）"""
+    """根据公历日期和时辰索引计算八字"""
     # 年柱
     year_gan = TIAN_GAN[(year - 4) % 10]
     year_zhi = DI_ZHI[(year - 4) % 12]
@@ -47,8 +58,9 @@ def get_bazi(year, month, day, hour_index):
         'hour': f'{hour_gan}{hour_zhi}'
     }
 
+# ---------- 原有：AI运势解读（修复编码） ----------
 def get_ai_fortune(bazi, api_key, model='glm-4-flash'):
-    """原有AI运势解读"""
+    """调用智谱 GLM-4-Flash 生成运势解读（已修复编码）"""
     bazi_str = f"{bazi['year']} {bazi['month']} {bazi['day']} {bazi['hour']}"
     prompt = f"""你是一位资深命理师。请根据用户的八字命盘，提供一份详细的运势分析报告。
 
@@ -68,7 +80,7 @@ def get_ai_fortune(bazi, api_key, model='glm-4-flash'):
             "https://open.bigmodel.cn/api/paas/v4/chat/completions",
             headers={
                 "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json; charset=utf-8"   # ✅ 修复：指定 UTF-8
             },
             json={
                 "model": model,
@@ -93,7 +105,7 @@ def get_ai_fortune(bazi, api_key, model='glm-4-flash'):
 # ---------- 原有路由 ----------
 @app.route('/')
 def index():
-    return render_template('index.html', shichen=SHI_CHEN)
+    return render_template('index.html', shichen=SHI_CHEN, enumerate=enumerate)
 
 @app.route('/admin')
 def admin():
@@ -142,7 +154,7 @@ def update_config():
         return jsonify({'status': 'error', 'message': str(e)})
 
 # ---------- 新增：V1.0 MVP 娱乐功能 ----------
-# 塔罗牌数据（不变）
+# 塔罗牌数据
 TAROT_CARDS = [
     {"name": "愚者", "meaning": "新的开始，冒险，天真，自由", "positive": True},
     {"name": "魔术师", "meaning": "创造力，自信，掌握资源", "positive": True},
@@ -168,6 +180,7 @@ TAROT_CARDS = [
     {"name": "世界", "meaning": "完成，圆满，成就", "positive": True},
 ]
 
+# 趣味测试题库
 QUIZZES = [{
     "id": 1,
     "title": "你是哪种命理人格？",
@@ -285,14 +298,16 @@ def quiz_submit():
         'detail': f'你的命理人格是：{result["type"]}'
     })
 
-# ---------- 健康检查（新增，便于监控） ----------
 @app.route('/api/health', methods=['GET'])
 def health():
+    """健康检查（新增）"""
     return jsonify({
         'status': 'ok',
         'message': '命理镜 API 运行中',
         'ai_enabled': bool(app.config.get('GLM_API_KEY'))
     })
 
+# ---------- 启动入口 ----------
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port, debug=True)
