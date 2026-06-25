@@ -1,230 +1,463 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>命理运程预测 - AI智能版</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            background: rgba(255,255,255,0.95);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            font-size: 28px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #888;
-            font-size: 14px;
-            margin-bottom: 25px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: bold;
-        }
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        input:focus, select:focus {
-            border-color: #667eea;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
-        }
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .btn:hover { transform: scale(1.02); }
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        #result {
-            margin-top: 25px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            display: none;
-        }
-        #result.show {
-            display: block;
-            animation: fadeIn 0.6s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .bazi-display {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .bazi-display span {
-            font-size: 32px;
-            color: white;
-            font-weight: bold;
-            letter-spacing: 8px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .fortune-text {
-            white-space: pre-wrap;
-            line-height: 1.8;
-            color: #333;
-            font-size: 15px;
-        }
-        .fortune-text::before {
-            content: '📜 ';
-        }
-        .loading {
-            text-align: center;
-            color: #667eea;
-            display: none;
-            padding: 20px;
-        }
-        .loading .spinner {
-            display: inline-block;
-            animation: spin 1s linear infinite;
-            font-size: 30px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .error {
-            color: #e74c3c;
-            text-align: center;
-            margin-top: 10px;
-            display: none;
-            padding: 15px;
-            background: #fde8e8;
-            border-radius: 8px;
-        }
-        .admin-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #999;
-            font-size: 12px;
-            text-decoration: none;
-        }
-        .admin-link:hover { color: #667eea; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>命理镜 · 娱乐平台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f0eb;
+      color: #3d2c1e;
+      padding-bottom: 80px;
+    }
+    .app-header {
+      background: #fff8f2;
+      padding: 16px 20px 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .app-header h1 { font-size: 22px; font-weight: 700; color: #3d2c1e; }
+    .app-header .disclaimer {
+      font-size: 12px;
+      color: #b8a89a;
+      background: #eee7e0;
+      padding: 4px 12px;
+      border-radius: 30px;
+    }
+    .page { display: none; padding: 20px 16px 100px; max-width: 600px; margin: 0 auto; }
+    .page.active { display: block; }
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .card-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #ede8e2;
+      border-radius: 16px;
+      font-size: 16px;
+      background: #fcfaf8;
+      outline: none;
+      transition: 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      border-color: #c4a88a;
+      box-shadow: 0 0 0 4px rgba(196,168,138,0.15);
+    }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #c4a88a, #a8896a);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 12px rgba(168,137,106,0.3);
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-sm { font-size: 14px; padding: 10px; }
+    .pillars {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .pillar-item {
+      background: #f5f0eb;
+      border-radius: 12px;
+      padding: 8px 4px;
+      text-align: center;
+    }
+    .pillar-item .label { font-size: 12px; color: #8a7a6a; }
+    .pillar-item .value { font-size: 18px; font-weight: 700; color: #3d2c1e; }
+    .meta-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .meta-info span {
+      background: #f5f0eb;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+    .reading {
+      background: #fcfaf8;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 15px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .daily-score { font-size: 48px; font-weight: 700; color: #a8896a; text-align: center; padding: 8px 0; }
+    .daily-keyword { text-align: center; font-size: 20px; font-weight: 600; color: #3d2c1e; }
+    .daily-details { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 12px 0; }
+    .daily-details span { background: #f5f0eb; padding: 6px 16px; border-radius: 30px; font-size: 14px; }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff8f2;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 16px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      border-top: 1px solid #ede8e2;
+      z-index: 20;
+    }
+    .bottom-nav .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      color: #b8a89a;
+      cursor: pointer;
+      transition: 0.2s;
+      padding: 4px 12px;
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+    .bottom-nav .nav-item.active { color: #a8896a; font-weight: 600; }
+    .bottom-nav .nav-item .icon { font-size: 24px; margin-bottom: 2px; }
+    .loading-text { text-align: center; color: #8a7a6a; padding: 20px 0; }
+    .quiz-option {
+      display: block;
+      width: 100%;
+      padding: 12px 16px;
+      margin: 6px 0;
+      background: #f5f0eb;
+      border: 2px solid transparent;
+      border-radius: 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 16px;
+    }
+    .quiz-option:hover { background: #ede8e2; }
+    .quiz-option.selected { border-color: #a8896a; background: #f0e8df; }
+    .quiz-result { font-size: 18px; font-weight: 600; padding: 16px; text-align: center; }
+    .tarot-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+    .tarot-card .card-box {
+      width: 180px;
+      height: 260px;
+      background: #2d1f14;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #d4ad7a;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .tarot-card .card-box:hover { transform: scale(1.02); }
+    .tarot-card .card-name { font-size: 22px; font-weight: 700; }
+    .tarot-card .card-position { color: #8a7a6a; font-size: 16px; margin: 4px 0; }
+    .tarot-card .card-meaning { text-align: center; padding: 12px; background: #f5f0eb; border-radius: 16px; margin-top: 12px; }
+    @media (max-width: 480px) {
+      .form-row { flex-direction: column; gap: 0; }
+      .pillars { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🔮 AI 命理运程预测</h1>
-        <p class="subtitle">基于智谱 GLM-4-Flash 大模型 · 智能解读您的命盘</p>
 
-        <form id="fortuneForm">
-            <div class="form-group">
-                <label>📅 出生日期</label>
-                <input type="date" id="birthday" required max="2026-06-22">
-            </div>
-            <div class="form-group">
-                <label>🕐 出生时辰</label>
-                <select id="hour">
-                    {% for shi in shichen %}
-                    <option value="{{ loop.index0 }}">{{ shi }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" class="btn" id="submitBtn">✨ 开始推算</button>
-        </form>
+<div class="app-header">
+  <h1>☯ 命理镜</h1>
+  <span class="disclaimer">🎯 仅供娱乐</span>
+</div>
 
-        <div class="loading" id="loading">
-            <div class="spinner">🔮</div>
-            <p style="margin-top:10px;">AI正在为您解读命盘，请稍候...</p>
-        </div>
-        <div class="error" id="error"></div>
+<div id="app">
 
-        <div id="result">
-            <div class="bazi-display">
-                <span id="baziDisplay">甲子 甲子 甲子 甲子</span>
-            </div>
-            <div class="fortune-text" id="fortuneText"></div>
-        </div>
-
-        <a href="/admin" class="admin-link">⚙️ 管理员配置</a>
+  <!-- 首页 -->
+  <div class="page active" id="page-home">
+    <div class="card">
+      <div class="card-title">📅 今日运势</div>
+      <div id="daily-content"><div class="loading-text">加载中...</div></div>
     </div>
+    <div class="card">
+      <div class="card-title">⚡ 快捷入口</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <button class="btn btn-sm" onclick="navigateTo('predict')">🔮 八字预测</button>
+        <button class="btn btn-sm" onclick="navigateTo('tarot')">🃏 塔罗占卜</button>
+        <button class="btn btn-sm" onclick="navigateTo('quiz')">🧠 趣味测试</button>
+        <button class="btn btn-sm" onclick="navigateTo('mine')">👤 我的信息</button>
+      </div>
+    </div>
+  </div>
 
-    <script>
-        document.getElementById('fortuneForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+  <!-- 八字预测（原有功能） -->
+  <div class="page" id="page-predict">
+    <div class="card">
+      <div class="card-title">🔮 八字运势预测</div>
+      <form id="predict-form">
+        <div class="form-group"><label>出生日期</label><input type="date" id="birthday" value="2000-01-01" /></div>
+        <div class="form-group"><label>出生时辰</label>
+          <select id="hour-select">
+  {% for name in shichen %}
+  <option value="{{ loop.index0 }}">{{ name }}</option>
+  {% endfor %}
+</select>
+        </div>
+        <button type="submit" class="btn">🔮 查看运势</button>
+      </form>
+      <div id="predict-result" style="margin-top:20px;"></div>
+    </div>
+  </div>
 
-            const btn = document.getElementById('submitBtn');
-            const loading = document.getElementById('loading');
-            const error = document.getElementById('error');
-            const resultDiv = document.getElementById('result');
+  <!-- 塔罗 -->
+  <div class="page" id="page-tarot">
+    <div class="card">
+      <div class="card-title">🃏 每日塔罗</div>
+      <button class="btn" onclick="drawTarot()" style="margin-bottom:16px;">抽一张牌</button>
+      <div id="tarot-result"></div>
+    </div>
+  </div>
 
-            btn.disabled = true;
-            loading.style.display = 'block';
-            error.style.display = 'none';
-            resultDiv.classList.remove('show');
+  <!-- 测试 -->
+  <div class="page" id="page-quiz">
+    <div class="card">
+      <div class="card-title">🧠 趣味测试</div>
+      <div id="quiz-container"><button class="btn" onclick="startQuiz()">开始测试</button></div>
+    </div>
+  </div>
 
-            try {
-                const response = await fetch('/api/predict', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        birthday: document.getElementById('birthday').value,
-                        hour: document.getElementById('hour').value
-                    })
-                });
+  <!-- 我的信息 -->
+  <div class="page" id="page-mine">
+    <div class="card">
+      <div class="card-title">👤 我的信息</div>
+      <p style="color:#8a7a6a; margin-bottom:12px;">设置出生信息以获取每日运势</p>
+      <form id="mine-form">
+        <div class="form-group"><label>出生年</label><input type="number" id="mine-year" value="1990" /></div>
+        <div class="form-group"><label>出生月</label><input type="number" id="mine-month" value="1" /></div>
+        <div class="form-group"><label>出生日</label><input type="number" id="mine-day" value="1" /></div>
+        <button type="submit" class="btn">保存</button>
+      </form>
+    </div>
+  </div>
+</div>
 
-                const data = await response.json();
+<div class="bottom-nav">
+  <button class="nav-item active" data-page="home"><span class="icon">🏠</span>首页</button>
+  <button class="nav-item" data-page="predict"><span class="icon">🔮</span>预测</button>
+  <button class="nav-item" data-page="tarot"><span class="icon">🃏</span>塔罗</button>
+  <button class="nav-item" data-page="quiz"><span class="icon">🧠</span>测试</button>
+  <button class="nav-item" data-page="mine"><span class="icon">👤</span>我的</button>
+</div>
 
-                if (data.status === 'success') {
-                    document.getElementById('baziDisplay').textContent = data.data.bazi;
-                    document.getElementById('fortuneText').textContent = data.data.fortune;
-                    resultDiv.classList.add('show');
-                } else {
-                    error.textContent = '⚠️ ' + data.message;
-                    error.style.display = 'block';
-                }
-            } catch (err) {
-                error.textContent = '⚠️ 网络异常，请检查连接';
-                error.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                loading.style.display = 'none';
-            }
-        });
+<script>
+// ---------- 全局 ----------
+const API_BASE = '';
 
-        // 设置默认日期
-        document.getElementById('birthday').value = '2000-01-01';
-    </script>
+function getBirth() {
+  try { return JSON.parse(localStorage.getItem('birthInfo')); } catch { return null; }
+}
+function saveBirth(d) { localStorage.setItem('birthInfo', JSON.stringify(d)); }
+
+// 导航
+function navigateTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
+  if (page === 'home') loadDaily();
+}
+
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => navigateTo(el.dataset.page));
+});
+
+// 通用 API 调用
+async function apiCall(path, method='GET', body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API_BASE + path, opts);
+  return r.json();
+}
+
+// ---------- 首页：每日运势 ----------
+async function loadDaily() {
+  const birth = getBirth();
+  const el = document.getElementById('daily-content');
+  if (!birth) {
+    el.innerHTML = `<p style="color:#8a7a6a;">请先设置出生信息</p><button class="btn btn-sm" onclick="navigateTo('mine')">去设置</button>`;
+    return;
+  }
+  try {
+    const res = await apiCall('/api/daily', 'POST', birth);
+    if (res.success) {
+      const d = res.daily;
+      el.innerHTML = `
+        <div class="daily-score">${d.score}</div>
+        <div class="daily-keyword">今日关键词：${d.keyword}</div>
+        <div class="daily-details">
+          <span>🍀 幸运色：${d.color}</span>
+          <span>🔢 幸运数字：${d.lucky_num}</span>
+          <span>💎 好运物：${d.item}</span>
+        </div>
+        <p>${d.advice}</p>
+        <p style="font-size:12px;color:#b8a89a;margin-top:8px;">${d.date}</p>
+      `;
+    }
+  } catch { el.innerHTML = '<p>加载失败</p>'; }
+}
+
+// ---------- 八字预测（原有接口） ----------
+document.getElementById('predict-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const birthday = document.getElementById('birthday').value;
+  const hour = document.getElementById('hour-select').value;
+  if (!birthday) { alert('请选择日期'); return; }
+  const resultDiv = document.getElementById('predict-result');
+  resultDiv.innerHTML = '<div class="loading-text">命理大师正在推演...</div>';
+  try {
+    const res = await apiCall('/api/predict', 'POST', { birthday, hour });
+    if (res.status === 'success') {
+      const data = res.data;
+      resultDiv.innerHTML = `
+        <div style="background:#f5f0eb;border-radius:16px;padding:16px;margin-bottom:12px;">
+          <strong>八字：</strong>${data.bazi}
+        </div>
+        <div class="reading">${data.fortune.replace(/\n/g, '<br>')}</div>
+      `;
+    } else {
+      resultDiv.innerHTML = `<p style="color:#c0392b;">${res.message}</p>`;
+    }
+  } catch {
+    resultDiv.innerHTML = '<p style="color:#c0392b;">网络请求失败</p>';
+  }
+});
+
+// ---------- 塔罗 ----------
+async function drawTarot() {
+  const el = document.getElementById('tarot-result');
+  el.innerHTML = '<div class="loading-text">洗牌中...</div>';
+  try {
+    const res = await apiCall('/api/tarot', 'GET');
+    if (res.success) {
+      const c = res.card;
+      el.innerHTML = `
+        <div class="tarot-card">
+          <div class="card-box">${c.name}</div>
+          <div class="card-name">${c.name}</div>
+          <div class="card-position">${c.position}</div>
+          <div class="card-meaning">${c.meaning}</div>
+        </div>
+      `;
+    }
+  } catch { el.innerHTML = '<p>抽牌失败</p>'; }
+}
+
+// ---------- 趣味测试 ----------
+let currentQuiz = null, currentAnswers = [];
+
+async function startQuiz() {
+  const el = document.getElementById('quiz-container');
+  try {
+    const res = await apiCall('/api/quiz', 'GET');
+    if (res.success && res.quizzes.length) {
+      currentQuiz = res.quizzes[0];
+      currentAnswers = [];
+      renderQuestion(0);
+    }
+  } catch { el.innerHTML = '<p>加载失败</p>'; }
+}
+
+function renderQuestion(idx) {
+  const el = document.getElementById('quiz-container');
+  const qz = currentQuiz;
+  if (idx >= qz.questions.length) { submitQuiz(); return; }
+  const q = qz.questions[idx];
+  let html = `<h3>${qz.title}</h3><p style="margin:8px 0;">第 ${idx+1}/${qz.questions.length} 题</p><p style="font-weight:500;">${q.q}</p>`;
+  q.options.forEach((opt, i) => {
+    const sel = currentAnswers[idx] === opt.score ? 'selected' : '';
+    html += `<button class="quiz-option ${sel}" data-score="${opt.score}" onclick="selectAnswer(${idx},'${opt.score}')">${opt.text}</button>`;
+  });
+  html += `<button class="btn" style="margin-top:12px;" onclick="nextQuestion(${idx})">${idx === qz.questions.length-1 ? '提交' : '下一题'}</button>`;
+  el.innerHTML = html;
+}
+
+function selectAnswer(idx, score) {
+  currentAnswers[idx] = score;
+  document.querySelectorAll('.quiz-option').forEach(b => b.classList.toggle('selected', b.dataset.score === score));
+}
+
+function nextQuestion(idx) {
+  if (!currentAnswers[idx]) { alert('请选择一个选项'); return; }
+  renderQuestion(idx + 1);
+}
+
+async function submitQuiz() {
+  const el = document.getElementById('quiz-container');
+  try {
+    const res = await apiCall('/api/quiz/submit', 'POST', { quiz_id: currentQuiz.id, answers: currentAnswers });
+    if (res.success) {
+      el.innerHTML = `
+        <div class="quiz-result">🎉 ${res.result.type}</div>
+        <p style="text-align:center;">${res.result.desc}</p>
+        <button class="btn" style="margin-top:16px;" onclick="startQuiz()">再测一次</button>
+      `;
+    }
+  } catch { el.innerHTML = '<p>提交失败</p>'; }
+}
+
+// ---------- 我的信息 ----------
+document.getElementById('mine-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const data = {
+    year: parseInt(document.getElementById('mine-year').value),
+    month: parseInt(document.getElementById('mine-month').value),
+    day: parseInt(document.getElementById('mine-day').value)
+  };
+  if (!data.year || !data.month || !data.day) { alert('请填写完整日期'); return; }
+  saveBirth(data);
+  alert('保存成功！');
+  loadDaily();
+});
+
+// 初始化
+document.addEventListener('DOMContentLoaded', function() {
+  const birth = getBirth();
+  if (birth) {
+    document.getElementById('mine-year').value = birth.year;
+    document.getElementById('mine-month').value = birth.month;
+    document.getElementById('mine-day').value = birth.day;
+  }
+  loadDaily();
+});
+</script>
 </body>
 </html>
